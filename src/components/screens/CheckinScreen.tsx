@@ -22,7 +22,7 @@ interface Props {
 }
 
 const CheckinScreen = ({ onOpenWisdom, onOpenCollection }: Props) => {
-  const { photos, pending, stageFiles, removePending, commitPending } = useExploration();
+  const { photos, pending, stageFiles, removePending, commitPending, updatePhoto } = useExploration();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [resultZodiac, setResultZodiac] = useState<ZodiacInfo | null>(null);
@@ -50,23 +50,21 @@ const CheckinScreen = ({ onOpenWisdom, onOpenCollection }: Props) => {
     }
   };
 
-  const handleLaunch = () => {
+  const handleLaunch = async () => {
     if (pending.length === 0) {
       toast("별자리를 만들 사진을 등록해주세요");
       return;
     }
 
-    const committed = commitPending();
+    const collectedIds = photos.map((p) => p.zodiacId ?? "").filter(Boolean);
+    const committed = await commitPending();
 
-    // 대표 사진(첫 번째)의 메타데이터로 별자리 계산
     const rep = committed[0];
-    const collectedIds = photos.map((p) => {
-      // 기존 수집 별자리 ID 목록 (zodiac 필드가 있으면 사용)
-      return (p as any).zodiacId ?? "";
-    }).filter(Boolean);
-
     const zodiac = computeZodiac(rep?.takenAt, rep?.lat, rep?.lon, rep?.city, collectedIds);
     setResultZodiac(zodiac);
+
+    // 커밋된 모든 사진에 zodiacId 저장 (로컬 + DB)
+    committed.forEach((p) => updatePhoto(p.id, { zodiacId: zodiac.id }));
 
     toast.success(`별 조각 ${committed.length}개 획득`, {
       description: `${committed.length}장의 사진이 별자리에 추가되었어요`,

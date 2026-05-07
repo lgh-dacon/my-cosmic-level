@@ -5,9 +5,10 @@ export interface ExplorationCtxValue {
   photos: PhotoRecord[];
   pending: PhotoRecord[];
   stats: ExplorationStats;
+  isReady: boolean;
   addFiles: (files: FileList | File[]) => Promise<PhotoRecord[]>;
   stageFiles: (files: FileList | File[]) => Promise<PhotoRecord[]>;
-  commitPending: () => PhotoRecord[];
+  commitPending: () => Promise<PhotoRecord[]>;
   removePending: (id: string) => void;
   clearPending: () => void;
   removePhoto: (id: string) => void;
