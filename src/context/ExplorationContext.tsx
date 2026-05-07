@@ -25,7 +25,7 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
         );
 
         const { data, error } = await supabase
-          .from("ex_photos")
+          .from("photo_records")
           .select("*")
           .eq("user_id", uid)
           .order("created_at", { ascending: false });
@@ -89,7 +89,7 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
     setPending([]);
 
     if (userId && committed.length > 0) {
-      const { error } = await supabase.from("ex_photos").insert(
+      const { error } = await supabase.from("photo_records").upsert(
         committed.map((r) => ({
           id:        r.id,
           user_id:   userId,
@@ -102,6 +102,7 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
           continent: r.continent ?? null,
           zodiac_id: null,
         })),
+        { onConflict: "id", ignoreDuplicates: true },
       );
       if (error) console.error("[commitPending] DB 저장 실패:", error.message);
     }
@@ -120,7 +121,7 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
     (id: string) => {
       setPhotos((prev) => prev.filter((p) => p.id !== id));
       if (userId) {
-        supabase.from("ex_photos").delete().eq("id", id).eq("user_id", userId)
+        supabase.from("photo_records").delete().eq("id", id).eq("user_id", userId)
           .then(({ error }) => { if (error) console.error("[removePhoto] 삭제 실패:", error.message); });
       }
     },
@@ -132,7 +133,7 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
     (id: string, patch: Partial<PhotoRecord>) => {
       setPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
       if (userId && patch.zodiacId !== undefined) {
-        supabase.from("ex_photos").update({ zodiac_id: patch.zodiacId }).eq("id", id).eq("user_id", userId)
+        supabase.from("photo_records").update({ zodiac_id: patch.zodiacId }).eq("id", id).eq("user_id", userId)
           .then(({ error }) => { if (error) console.error("[updatePhoto] 업데이트 실패:", error.message); });
       }
     },
@@ -143,7 +144,7 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
     setPhotos([]);
     setPending([]);
     if (userId) {
-      supabase.from("ex_photos").delete().eq("user_id", userId)
+      supabase.from("photo_records").delete().eq("user_id", userId)
         .then(({ error }) => { if (error) console.error("[clear] 전체 삭제 실패:", error.message); });
     }
   }, [userId]);
