@@ -34,16 +34,17 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
 
         if (data && data.length > 0) {
           const loaded: PhotoRecord[] = data.map((row) => ({
-            id:        row.id,
-            url:       "",
-            fileName:  row.file_name,
-            takenAt:   row.taken_at ?? undefined,
-            lat:       row.lat ?? undefined,
-            lon:       row.lon ?? undefined,
-            city:      row.city ?? undefined,
-            country:   row.country ?? undefined,
-            continent: row.continent ?? undefined,
-            zodiacId:  row.zodiac_id ?? undefined,
+            id:           row.id,
+            url:          row.thumbnail_url ?? "",
+            thumbnailUrl: row.thumbnail_url ?? undefined,
+            fileName:     row.file_name,
+            takenAt:      row.taken_at ?? undefined,
+            lat:          row.lat ?? undefined,
+            lon:          row.lon ?? undefined,
+            city:         row.city ?? undefined,
+            country:      row.country ?? undefined,
+            continent:    row.continent ?? undefined,
+            zodiacId:     row.zodiac_id ?? undefined,
           }));
           setPhotos(loaded);
         }
@@ -91,16 +92,17 @@ export const ExplorationProvider = ({ children }: { children: ReactNode }) => {
     if (userId && committed.length > 0) {
       const { error } = await supabase.from("photo_records").upsert(
         committed.map((r) => ({
-          id:        r.id,
-          user_id:   userId,
-          file_name: r.fileName,
-          taken_at:  r.takenAt ?? null,
-          lat:       r.lat ?? null,
-          lon:       r.lon ?? null,
-          city:      r.city ?? null,
-          country:   r.country ?? null,
-          continent: r.continent ?? null,
-          zodiac_id: null,
+          id:            r.id,
+          user_id:       userId,
+          file_name:     r.fileName,
+          taken_at:      r.takenAt ?? null,
+          lat:           r.lat ?? null,
+          lon:           r.lon ?? null,
+          city:          r.city ?? null,
+          country:       r.country ?? null,
+          continent:     r.continent ?? null,
+          zodiac_id:     null,
+          thumbnail_url: r.thumbnailUrl ?? null,
         })),
         { onConflict: "id", ignoreDuplicates: true },
       );
