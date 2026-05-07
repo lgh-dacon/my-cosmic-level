@@ -10,6 +10,7 @@ export interface PhotoRecord {
   city?: string;
   country?: string;
   continent?: string;
+  zodiacId?: string; // 별자리 ID (aries, cancer, ...)
 }
 
 export interface ExplorationStats {
