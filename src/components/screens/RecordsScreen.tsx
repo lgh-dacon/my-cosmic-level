@@ -161,7 +161,13 @@ const RecordsScreen = ({ initialView, initialCity, onAddRecord }: RecordsScreenP
                         onClick={() => openFeedAt(p.id)}
                         className="relative block h-40 w-full bg-secondary"
                       >
-                        <img src={p.url} alt={p.fileName} className="h-full w-full object-cover" />
+                        {p.url ? (
+                          <img src={p.url} alt={p.fileName} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
+                          </div>
+                        )}
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-left text-white">
                           <p className="text-[10px] font-semibold tracking-widest opacity-80">LOCATION</p>
                           <p className="text-[16px] font-bold">{p.city ?? "위치 정보 없음"}</p>
@@ -218,7 +224,13 @@ const RecordsScreen = ({ initialView, initialCity, onAddRecord }: RecordsScreenP
                         onClick={() => openFeedAt(p.id)}
                         className="relative aspect-square overflow-hidden rounded-xl bg-secondary"
                       >
-                        <img src={p.url} alt={p.fileName} className="h-full w-full object-cover" />
+                        {p.url ? (
+                          <img src={p.url} alt={p.fileName} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+                          </div>
+                        )}
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-1 py-1">
                           <p className="truncate text-[8px] font-bold text-white">{getStarFragment(p.id)}</p>
                         </div>
@@ -272,7 +284,13 @@ const _FeedView = ({
             <div key={p.id} className="min-w-0 flex-[0_0_100%] px-1">
               <div className="overflow-hidden rounded-2xl bg-card hairline shadow-soft">
                 <div className="relative aspect-square bg-secondary">
-                  <img src={p.url} alt={p.fileName} className="h-full w-full object-cover" />
+                  {p.url ? (
+                    <img src={p.url} alt={p.fileName} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <ImageIcon className="h-10 w-10 text-muted-foreground/40" />
+                    </div>
+                  )}
                   {p.lat != null ? (
                     <span className="absolute right-2.5 top-2.5 rounded-md bg-white/90 px-2 py-1 text-[10px] font-bold text-foreground">
                       GPS 인식 완료

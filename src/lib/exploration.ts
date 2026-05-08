@@ -3,6 +3,7 @@ import exifr from "exifr";
 export interface PhotoRecord {
   id: string;
   url: string;
+  thumbnailUrl?: string; // Base64 JPEG — DB 저장용, 세션 간 복원
   fileName: string;
   takenAt?: number; // epoch ms
   lat?: number;
@@ -10,6 +11,7 @@ export interface PhotoRecord {
   city?: string;
   country?: string;
   continent?: string;
+  zodiacId?: string; // 별자리 ID (aries, cancer, ...)
 }
 
 export interface ExplorationStats {
@@ -22,6 +24,27 @@ export interface ExplorationStats {
   distanceKm: number;
   globalRank: number;     // mock rank
   topPercent: number;     // mock top %
+}
+
+/* ---------- Thumbnail (Canvas → Base64 JPEG) ---------- */
+function generateThumbnail(blob: Blob, maxSize = 200): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const blobUrl = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(blobUrl);
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error("thumbnail 생성 실패")); };
+    img.src = blobUrl;
+  });
 }
 
 /* ---------- HEIC conversion ---------- */
@@ -59,6 +82,14 @@ export async function extractPhotoMeta(file: File): Promise<PhotoRecord> {
   }
 
   const url = URL.createObjectURL(displayBlob);
+
+  let thumbnailUrl: string | undefined;
+  try {
+    thumbnailUrl = await generateThumbnail(displayBlob);
+  } catch {
+    // 썸네일 생성 실패 시 무시 — url은 현재 세션에서만 동작
+  }
+
   let lat: number | undefined;
   let lon: number | undefined;
   let takenAt: number | undefined;
@@ -116,7 +147,7 @@ export async function extractPhotoMeta(file: File): Promise<PhotoRecord> {
     }
   }
 
-  const rec: PhotoRecord = { id, url, fileName: file.name, lat, lon, takenAt };
+  const rec: PhotoRecord = { id, url, thumbnailUrl, fileName: file.name, lat, lon, takenAt };
   if (lat != null && lon != null) {
     const geo = await reverseGeocode(lat, lon);
     rec.city = geo.city;
